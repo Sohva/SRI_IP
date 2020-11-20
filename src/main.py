@@ -1,5 +1,6 @@
 from gurobipy import *
 from itertools import chain
+from collections import defaultdict
 m = Model("SRI")
 
 
@@ -36,6 +37,13 @@ def get_preferred_neighbours(u, v):
         else:
             break
 
+ranks = defaultdict(lambda: 0)
+for u, prefs in enumerate(preferences):
+    for index, v in enumerate(prefs):
+        ranks[(u, v)] = index + 1
+
+assert ranks[9, 8] == 6
+assert ranks[3, 4] == 8
 
 # Create the initial matching matrix
 x = m.addVars(n, n, vtype=GRB.BINARY)
@@ -47,9 +55,10 @@ m.addConstrs(x.sum(u, [i for i in get_preferred_neighbours(u, v)])
             + x[u, v] >= 1 for u,v in get_edges())
 m.addConstrs(x[u,v] == x[v,u] for u in range(n) for v in range(n))
 
+m.setObjective(x.prod(ranks))
+
 m.optimize()
 
-print(m.getVars())
 matches = []
 for u in range(n):
     str = ""
