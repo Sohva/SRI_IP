@@ -3,12 +3,10 @@ from itertools import chain
 m = Model("SRI")
 
 
-preferences = [
-    [1, 2, 3],
-    [2, 0, 3],
-    [0, 1, 3],
-    [2]
-]
+preferences = [[8, 2, 9, 3, 6, 4, 5, 7, 10], [4, 3, 8, 9, 5, 1, 10, 6, 7], [5, 6, 8, 2, 1, 7, 10, 4, 9], [10, 7, 9, 3, 1, 6, 2, 5, 8], [7, 4, 10, 8, 2, 6, 3, 1, 9], [2, 8, 7, 3, 4, 10, 1, 5, 9], [2, 1, 8, 3, 5, 10, 4, 6, 9], [10, 4, 2, 5, 6, 7, 1, 3, 9], [6, 7, 2, 5, 10, 3, 4, 8, 1], [3, 1, 6, 5, 2, 9, 8, 4, 7]]
+for i, ls in enumerate(preferences):
+    preferences[i] = [j - 1 for j in ls]
+print(preferences)
 n = len(preferences) # number of agents
 
 def get_neighbours(i):
@@ -52,11 +50,15 @@ m.addConstrs(x[u,v] == x[v,u] for u in range(n) for v in range(n))
 m.optimize()
 
 print(m.getVars())
+matches = []
 for u in range(n):
     str = ""
     for v in range(n):
         if x[u,v].x > 0:
             str += " x"
+            if u < v:
+                matches.append((u + 1,v + 1))
         else:
             str += "  "
     print(str)
+print(matches)
