@@ -42,8 +42,18 @@ for u, prefs in enumerate(preferences):
     for index, v in enumerate(prefs):
         ranks[(u, v)] = index + 1
 
+def delta(i):
+    deltas = defaultdict(lambda: 0)
+    for u, prefs in enumerate(preferences):
+        if i <= len(prefs):
+            deltas[u, prefs[i - 1]] = 1
+    return deltas
+
 assert ranks[9, 8] == 6
 assert ranks[3, 4] == 8
+assert delta(1)[3,9] == 1
+assert delta(1)[3,7] == 0
+assert delta(2)[5,7] == 1
 
 # Create the initial matching matrix
 x = m.addVars(n, n, vtype=GRB.BINARY)
@@ -55,7 +65,11 @@ m.addConstrs(x.sum(u, [i for i in get_preferred_neighbours(u, v)])
             + x[u, v] >= 1 for u,v in get_edges())
 m.addConstrs(x[u,v] == x[v,u] for u in range(n) for v in range(n))
 
-m.setObjective(x.prod(ranks))
+# Egalitarian
+# m.setObjective(x.prod(ranks))
+
+# First-choice-maximal
+m.setObjective(x.prod(delta(1)), GRB.MAXIMIZE)
 
 m.optimize()
 
