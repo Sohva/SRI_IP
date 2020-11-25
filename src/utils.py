@@ -42,7 +42,7 @@ class PreferenceHelper:
 
     def delta(self, i):
         deltas = defaultdict(lambda: 0)
-        for u, prefs in enumerate(preferences):
+        for u, prefs in enumerate(self.preferences):
             if i <= len(prefs):
                 deltas[u, prefs[i - 1]] = 1
         return deltas
