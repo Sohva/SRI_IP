@@ -1,9 +1,17 @@
 from collections import defaultdict
 
+def read_instance(file):
+    with open(file) as f:
+        preferences = []
+        n = int(f.readline())
+        for line in f.readlines():
+            preferences.applend([int(i) + 1 for i in line.split()])
+    assert n == len(preferences)
+    return preferences
 
 class PreferenceHelper:
 
-    def __init__(self, preferences):
+    def __init__(self, file):
         self.preferences = []
         for i, ls in enumerate(preferences):
             self.preferences.append([j - 1 for j in ls])

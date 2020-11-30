@@ -28,10 +28,12 @@ def solve_SRI(preferences, optimisation=OptimalityCriteria.NONE):
         # x_{u, v} <= 1 for each {u, v} \in E
     m.addConstrs(x.sum(u, [i for i in h.get_preferred_neighbours(u, v)])
             + x.sum([i for i in h.get_preferred_neighbours(v, u)], v) 
-            + x[u, v] >= 1 for u,v in h.get_edges())
+            + x[u, v] >= 1
+                for u,v in h.get_edges())
 
-    # x_{u, v} = 0 for each {u, v} \notin E
+    # x_{u, v} = x_{v, u} for each {u, v} \notin E
     m.addConstrs(x[u,v] == x[v,u] for u in range(n) for v in range(n))
+
     if optimisation == OptimalityCriteria.EGALITARIAN:
         # \sum_{u, v \in V} rank(u, v)x_{u,v}
         m.setObjective(x.prod(h.ranks))
