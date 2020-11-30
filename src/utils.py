@@ -4,9 +4,9 @@ def read_instance(file):
     with open(file) as f:
         preferences = []
         n = int(f.readline())
-        for line in f.readlines():
+        for _ in range(n):
+            line = f.readline()
             preferences.append([int(i) - 1 for i in line.split()])
-    assert n == len(preferences)
     return preferences
 
 class PreferenceHelper:

@@ -48,15 +48,9 @@ def solve_SRI(file, optimisation=OptimalityCriteria.NONE):
     n = len(preferences)
     matches = []
     for u in range(n):
-        result = ""
         for v in range(n):
-            if x[u,v].x > 0:
-                result += " x"
-                if u < v:
-                    matches.append((u + 1,v + 1))
-            else:
-                result += "  "
-        print(result)
-    print(matches)
+            if x[u,v].x > 0 and u < v:
+                matches.append((u + 1,v + 1))
+    return matches
 
 
