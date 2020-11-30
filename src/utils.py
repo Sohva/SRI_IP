@@ -5,16 +5,14 @@ def read_instance(file):
         preferences = []
         n = int(f.readline())
         for line in f.readlines():
-            preferences.applend([int(i) + 1 for i in line.split()])
+            preferences.append([int(i) - 1 for i in line.split()])
     assert n == len(preferences)
     return preferences
 
 class PreferenceHelper:
 
-    def __init__(self, file):
-        self.preferences = []
-        for i, ls in enumerate(preferences):
-            self.preferences.append([j - 1 for j in ls])
+    def __init__(self, preferences):
+        self.preferences = preferences
         self.n = len(preferences)
         self.ranks = defaultdict(lambda: 0)
         for u, prefs in enumerate(self.preferences):

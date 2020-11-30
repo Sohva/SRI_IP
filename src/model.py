@@ -1,6 +1,6 @@
 from gurobipy import *
 
-from utils import *
+from utils import read_instance, PreferenceHelper
 
 from enum import Enum
 
@@ -9,7 +9,8 @@ class OptimalityCriteria(Enum):
     EGALITARIAN = 1
     FIRST_CHOICE_MAXIMAL = 2
 
-def solve_SRI(preferences, optimisation=OptimalityCriteria.NONE):
+def solve_SRI(file, optimisation=OptimalityCriteria.NONE):
+    preferences = read_instance(file)
     h = PreferenceHelper(preferences)
     m = Model("SRI")
 
