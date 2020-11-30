@@ -1,12 +1,12 @@
 from collections import defaultdict
 
-def read_instance(file):
+def read_instance(file, offset=1):
     with open(file) as f:
         preferences = []
         n = int(f.readline())
         for _ in range(n):
             line = f.readline()
-            preferences.append([int(i) - 1 for i in line.split()])
+            preferences.append([int(i) - offset for i in line.split()])
     return preferences
 
 class PreferenceHelper:
