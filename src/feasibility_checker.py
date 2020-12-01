@@ -38,6 +38,13 @@ def can_get_better_than(preferences, partners, j, i=None):
             return preferred_agent
     return None
 
+def cost(preferences, answer):
+    cost = 0
+    for pair in answer:
+        cost += preferences[pair[0] - 1].index(pair[1]) + 1
+        cost += preferences[pair[1] - 1].index(pair[0]) + 1
+    return cost
+
 if __name__ == "__main__":
     size = 20
     density = 75
