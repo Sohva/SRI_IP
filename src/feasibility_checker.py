@@ -39,12 +39,17 @@ def can_get_better_than(preferences, partners, j, i=None):
     return None
 
 if __name__ == "__main__":
-    preferences = [[2,4,3], [3,1,4], [1,2,4], [1,2]]
-    answers = [[(1,2), (3,4)], [(1,3), (2,4)], [(1,4), (2,3)]]
-    file_start = r"C:\Users\Sofia\Documents\level5project\SRI_IP\data\instances\20\i-20-25-"
+    size = 20
+    density = 75
+    file_base = "C:\\Users\\Sofia\\Documents\\level5project\\SRI_IP\\data\\instances\\%d\\i-%d-%d-%d.txt"
+    messages = ""
     for i in range(1, 21):
-        file = file_start + str(i)+ ".txt"
+        file = file_base % (size, size, density, i)
         sols = solve_SRI(file, OptimalityCriteria.EGALITARIAN)
         preferences = read_instance(file, 0)
-        print("**** " +str(i) + " ****")
-        print(check_feasibility(preferences, sols))
+        messages += "**** " +str(i) + " ****\n"
+        if sols is None:
+            messages += "UNFEASIBLE\n"
+        else:
+            messages += str(check_feasibility(preferences, sols)) + "\n"
+    print(messages)

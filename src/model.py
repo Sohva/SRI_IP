@@ -9,8 +9,9 @@ class OptimalityCriteria(Enum):
     EGALITARIAN = 1
     FIRST_CHOICE_MAXIMAL = 2
 
-def solve_SRI(file, optimisation=OptimalityCriteria.NONE):
-    preferences = read_instance(file)
+def solve_SRI(preferences, optimisation=OptimalityCriteria.NONE):
+    if type(preferences) == type(""):
+        preferences = read_instance(preferences)
     h = PreferenceHelper(preferences)
     m = Model("SRI")
 
@@ -46,11 +47,13 @@ def solve_SRI(file, optimisation=OptimalityCriteria.NONE):
 
     m.optimize()
     n = len(preferences)
-    matches = []
+    matches = set()
+    if not hasattr(x[0,0], "x"):
+        return None
     for u in range(n):
         for v in range(n):
             if x[u,v].x > 0 and u < v:
-                matches.append((u + 1,v + 1))
+                matches.add((u + 1,v + 1))
     return matches
 
 

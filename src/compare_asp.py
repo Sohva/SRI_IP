@@ -1,13 +1,18 @@
 import re
+from model import *
 
 def parse_answers(file_name):
     answers = []
     with open(file_name) as f:
+        current_answers = []
         for line in f.readlines():
             if line.startswith("roommate"):
-                answers.append(parse_solution(line))
+                current_answers.append(parse_solution(line))
             elif line.startswith("UNSATISFIABLE"):
-                answers.append(None)
+                answers.append([None])
+            elif line.startswith("OPTIMUM FOUND"):
+                answers.append(current_answers)
+                current_answers = []
     return answers
 
 def parse_solution(line):
@@ -23,7 +28,20 @@ def parse_solution(line):
     return pairs
 
 if __name__ == "__main__":
-    file = r"C:\Users\Sofia\Documents\level5project\SRI_IP\data\outputs\ASP\egal-SRI\output-egal-time-20-25.txt"
+    size = 20
+    density = 75
+    file = "C:\\Users\\Sofia\\Documents\\level5project\\SRI_IP\\data\\outputs\\ASP\\egal-SRI\\output-egal-time-%d-%d.txt" % (size,density)
     answers = parse_answers(file)
-    for i, a in enumerate(answers):
-        print(str(i +1) + " " + str(a))
+    
+    file_base = "C:\\Users\\Sofia\\Documents\\level5project\\SRI_IP\\data\\instances\\%d\\i-%d-%d-%d.txt"
+    messages = ""
+    for i in range(1, 21):
+        file = file_base % (size, size, density, i)
+        sol = solve_SRI(file, OptimalityCriteria.EGALITARIAN)
+        if sol not in answers[i-1]:
+            messages += str(i) + " is wrong\n"
+            messages += "Should be in\n"
+            messages += str(answers[i-1]) + "\n"
+            messages += "We got\n"
+            messages += str(sol) + "\n"
+    print(messages)
