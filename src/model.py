@@ -8,6 +8,8 @@ class OptimalityCriteria(Enum):
     NONE = 0
     EGALITARIAN = 1
     FIRST_CHOICE_MAXIMAL = 2
+    RANK_MAXIMAL = 3
+    GENEROUS = 4
 
 def solve_SRI(preferences, optimisation=OptimalityCriteria.NONE):
     if type(preferences) == type(""):
@@ -42,6 +44,24 @@ def solve_SRI(preferences, optimisation=OptimalityCriteria.NONE):
     elif optimisation == OptimalityCriteria.FIRST_CHOICE_MAXIMAL:
         # \sum_{u, v \in V} \delta^1(u,v)x_{u,v}
         m.setObjective(x.prod(h.delta(1)), GRB.MAXIMIZE)
+    elif optimisation == OptimalityCriteria.RANK_MAXIMAL:
+        for i in range(1, h.max_pref_length - 1):
+            delta_i = h.delta(i)
+            m.setObjective(x.prod(delta_i), GRB.MAXIMIZE)
+            m.optimize()
+            if not hasattr(m, "ObjVal"):
+                return None
+            m.addConstr(x.prod(delta_i) >= m.ObjVal)
+        m.setObjective(x.prod(h.delta(h.max_pref_length - 1)), GRB.MAXIMIZE)
+    elif optimisation == OptimalityCriteria.GENEROUS:
+        for i in range(h.max_pref_length, 1, -1):
+            delta_i = h.delta(i)
+            m.setObjective(x.prod(delta_i))
+            m.optimize()
+            if not hasattr(m, "ObjVal"):
+                return None
+            m.addConstr(x.prod(delta_i) <= m.ObjVal)
+        m.setObjective(x.prod(h.delta(h.max_pref_length - 1)))
     elif optimisation != OptimalityCriteria.NONE:
         raise(ValueError("Unsupported criteria", optimisation))
 

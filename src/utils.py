@@ -15,7 +15,10 @@ class PreferenceHelper:
         self.preferences = preferences
         self.n = len(preferences)
         self.ranks = defaultdict(lambda: 0)
+        self.max_pref_length = 0
         for u, prefs in enumerate(self.preferences):
+            if len(prefs) > self.max_pref_length:
+                self.max_pref_length = len(prefs)
             for index, v in enumerate(prefs):
                 self.ranks[(u, v)] = index + 1
 

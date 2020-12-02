@@ -45,6 +45,13 @@ def cost(preferences, answer):
         cost += preferences[pair[1] - 1].index(pair[0]) + 1
     return cost
 
+def profile(preferences, answer):
+    profile = [0 for _ in range(len(preferences))]
+    for pair in answer:
+        profile[preferences[pair[0] - 1].index(pair[1])] += 1
+        profile[preferences[pair[1] - 1].index(pair[0])] += 1
+    return profile
+
 if __name__ == "__main__":
     size = 20
     density = 75
