@@ -1,18 +1,23 @@
 import re
 from model import *
 from feasibility_checker import cost, check_feasibility, profile
+import sys
 
-def parse_answers(file_name):
+def parse_answers(file_name, blocking=False):
     answers = []
     with open(file_name) as f:
         for line in f.readlines():
-            if line.startswith("roommate"):
+            if line.startswith("roommate") and not blocking:
                 current_answer = parse_solution(line)
+            elif line.startswith("roommate") and blocking:
+                current_answer = [parse_solution(line), []]
             elif line.startswith("UNSATISFIABLE"):
                 answers.append(None)
             elif line.startswith("OPTIMUM FOUND"):
                 answers.append(current_answer)
                 current_answer = None
+            elif line.startswith("blocking") and blocking:
+                current_answer[1] = parse_solution(line)
     return answers
 
 def parse_solution(line):
@@ -30,8 +35,10 @@ def parse_solution(line):
 def check_optimality_and_feasibility(size, density, criteria):
     if criteria == OptimalityCriteria.EGALITARIAN:
         folder = "egal"
-    if criteria in [OptimalityCriteria.FIRST_CHOICE_MAXIMAL, OptimalityCriteria.RANK_MAXIMAL]:
+    elif criteria in [OptimalityCriteria.FIRST_CHOICE_MAXIMAL, OptimalityCriteria.RANK_MAXIMAL]:
         folder = "rankmax"
+    else:
+        raise(ValueError("Unsupported criteria", criteria))
     file = "C:\\Users\\Sofia\\Documents\\level5project\\SRI_IP\\data\\outputs\\ASP\\%s-SRI\\output-%s-time-%d-%d.txt" % (folder, folder, size,density)
     answers = parse_answers(file)
     
@@ -84,9 +91,24 @@ def compare_rank_maximal(sol, answer, preferences):
 
 if __name__ == "__main__":
     messages = []
-    criteria = OptimalityCriteria.RANK_MAXIMAL
-    for density in [25,75]:
-        for size in [20, 40]:
+    criteria_dict = {"rankmax": OptimalityCriteria.RANK_MAXIMAL,
+        "1stmax": OptimalityCriteria.FIRST_CHOICE_MAXIMAL,
+        "egal": OptimalityCriteria.EGALITARIAN,
+        "generous": OptimalityCriteria.EGALITARIAN}
+    criteria = criteria_dict[sys.argv[1].lower().strip()]
+    sizes = [20,40,60,80,100,150,200]
+    if len(sys.argv) <= 2:
+        minsize = 20
+        maxsize = 100
+    elif len(sys.argv) <= 3:
+        minsize = int(sys.argv[2])
+        maxsize = minsize
+    else:
+        minsize = int(sys.argv[2])
+        maxsize = int(sys.argv[3])
+    sizes = [i for i in sizes if i >= minsize and i<= maxsize]
+    for density in [25,50,75,100]:
+        for size in sizes:
             if not (criteria == OptimalityCriteria.FIRST_CHOICE_MAXIMAL and density == 25 and size == 80):
                 messages.append((size, density,
                     check_optimality_and_feasibility(size, density, criteria)))
