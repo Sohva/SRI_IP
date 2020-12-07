@@ -10,6 +10,7 @@ class OptimalityCriteria(Enum):
     FIRST_CHOICE_MAXIMAL = 2
     RANK_MAXIMAL = 3
     GENEROUS = 4
+    ALMOST_STABLE = 5
 
 def solve_SRI(preferences, optimisation=OptimalityCriteria.NONE):
     if type(preferences) == type(""):
@@ -30,10 +31,11 @@ def solve_SRI(preferences, optimisation=OptimalityCriteria.NONE):
     #\sum_{i \in \{ N(u): i >_u v\}} x_{u, i} +
         #\sum_{j \in { N(v): i >_v u}} x_{v, j} +
         # x_{u, v} <= 1 for each {u, v} \in E
-    m.addConstrs(x.sum(u, [i for i in h.get_preferred_neighbours(u, v)])
-            + x.sum([i for i in h.get_preferred_neighbours(v, u)], v) 
-            + x[u, v] >= 1
-                for u,v in h.get_edges())
+    if not optimisation == OptimalityCriteria.ALMOST_STABLE:
+        m.addConstrs(x.sum(u, [i for i in h.get_preferred_neighbours(u, v)])
+                + x.sum([i for i in h.get_preferred_neighbours(v, u)], v) 
+                + x[u, v] >= 1
+                    for u,v in h.get_edges())
 
     # x_{u, v} = x_{v, u} for each {u, v} \notin E
     m.addConstrs(x[u,v] == x[v,u] for u in range(n) for v in range(n))
@@ -62,6 +64,13 @@ def solve_SRI(preferences, optimisation=OptimalityCriteria.NONE):
                 return None
             m.addConstr(x.prod(delta_i) <= m.ObjVal)
         m.setObjective(x.prod(h.delta(h.max_pref_length - 1)))
+    elif optimisation == OptimalityCriteria.ALMOST_STABLE:
+        b = m.addVars(n, n, vtype=GRB.BINARY)
+        m.addConstrs(x.sum(u, [i for i in h.get_preferred_neighbours(u, v)])
+                + x.sum([i for i in h.get_preferred_neighbours(v, u)], v) 
+                + x[u, v] + b[u,v] >= 1
+                    for u,v in h.get_edges())
+        m.setObjective(b.sum())
     elif optimisation != OptimalityCriteria.NONE:
         raise(ValueError("Unsupported criteria", optimisation))
 

@@ -37,11 +37,16 @@ def check_optimality_and_feasibility(size, density, criteria):
         folder = "egal"
     elif criteria in [OptimalityCriteria.FIRST_CHOICE_MAXIMAL, OptimalityCriteria.RANK_MAXIMAL]:
         folder = "rankmax"
+    elif criteria == OptimalityCriteria.ALMOST_STABLE:
+        folder = "almost"
     else:
         raise(ValueError("Unsupported criteria", criteria))
     file = "C:\\Users\\Sofia\\Documents\\level5project\\SRI_IP\\data\\outputs\\ASP\\%s-SRI\\output-%s-time-%d-%d.txt" % (folder, folder, size,density)
-    answers = parse_answers(file)
-    
+    try:
+        answers = parse_answers(file)
+    except FileNotFoundError:
+        file = "C:\\Users\\Sofia\\Documents\\level5project\\SRI_IP\\data\\outputs\\ASP\\%s-SRI\\output-%s-%d-%d.txt" % (folder, folder, size,density)
+        answers = parse_answers(file)
     file_base = "C:\\Users\\Sofia\\Documents\\level5project\\SRI_IP\\data\\instances\\%d\\i-%d-%d-%d.txt"
     messages = ""
     for i in range(1, 21):
@@ -94,7 +99,8 @@ if __name__ == "__main__":
     criteria_dict = {"rankmax": OptimalityCriteria.RANK_MAXIMAL,
         "1stmax": OptimalityCriteria.FIRST_CHOICE_MAXIMAL,
         "egal": OptimalityCriteria.EGALITARIAN,
-        "generous": OptimalityCriteria.EGALITARIAN}
+        "generous": OptimalityCriteria.EGALITARIAN,
+        "almost":OptimalityCriteria.ALMOST_STABLE}
     criteria = criteria_dict[sys.argv[1].lower().strip()]
     sizes = [20,40,60,80,100,150,200]
     if len(sys.argv) <= 2:

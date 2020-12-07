@@ -26,15 +26,14 @@ def get_blocking_pairs(preferences, answer):
     return blocking_pairs
 
 def can_get_better_than(preferences, partners, j, i=None):
-    print(preferences, j, i)
     better_options = []
     if i is None:
-        rank = len(preferences)
+        preferred_agents = preferences[j-1]
     else:
-        rank = preferences[j-1].index(i)
-    for preferred_agent in preferences[j-1][0:rank]:
+        preferred_agents = preferences[j-1][0:preferences[j-1].index(i)]
+    for preferred_agent in preferred_agents:
         prefs = preferences[preferred_agent - 1]
-        if (j in prefs) and prefs.index(j) < prefs.index(partners[preferred_agent]):
+        if (j in prefs) and (not preferred_agent in partners or prefs.index(j) < prefs.index(partners[preferred_agent])):
             better_options.append(preferred_agent)
     return better_options
 
