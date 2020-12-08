@@ -47,12 +47,13 @@ def check_optimality_and_feasibility(size, density, criteria):
     except FileNotFoundError:
         file = "C:\\Users\\Sofia\\Documents\\level5project\\SRI_IP\\data\\outputs\\ASP\\%s-SRI\\output-%s-%d-%d.txt" % (folder, folder, size,density)
         answers = parse_answers(file)
-    file_base = "C:\\Users\\Sofia\\Documents\\level5project\\SRI_IP\\data\\instances\\%d\\i-%d-%d-%d.txt"
     messages = ""
+    # almost 40-50 is missing the first answer
+    if criteria == OptimalityCriteria.ALMOST_STABLE and density == 50 and size == 40:
+        answers = [None] + answers
     for i in range(1, len(answers) + 1):
-        file = file_base % (size, size, density, i)
-        sol = solve_SRI(file, criteria)
-        preferences = read_instance(file, 0)
+        sol = solve_SRI(size, density, i, criteria)
+        preferences = read_instance(size, density, i, 0)
         if sol != answers[i-1]:
             messages += str(i) + " is different\n"
             if criteria != OptimalityCriteria.ALMOST_STABLE or answers[i-1] is None or sol is None:
@@ -73,7 +74,7 @@ def check_optimality_and_feasibility(size, density, criteria):
             if feasibility is not None:
                 messages += "IP " + " : " + str(feasibility) + "\n"
         if answers[i-1] is not None:
-            feasibility = check_feasibility(preferences, sol) 
+            feasibility = check_feasibility(preferences, answers[i-1]) 
             if feasibility is not None:
                 messages += "ASP : " + str(feasibility) + "\n"
     return messages

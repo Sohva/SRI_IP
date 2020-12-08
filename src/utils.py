@@ -1,6 +1,10 @@
 from collections import defaultdict
 
-def read_instance(file, offset=1):
+def read_instance(size, density=None, index=None, offset=1):
+    if not type(size) == type(""):
+        file = "C:\\Users\\Sofia\\Documents\\level5project\\SRI_IP\\data\\instances\\%d\\i-%d-%d-%d.txt" % (size, size, density, index)
+    else:
+        file = size
     with open(file) as f:
         preferences = []
         n = int(f.readline())

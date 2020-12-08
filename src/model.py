@@ -12,8 +12,13 @@ class OptimalityCriteria(Enum):
     GENEROUS = 4
     ALMOST_STABLE = 5
 
-def solve_SRI(preferences, optimisation=OptimalityCriteria.NONE):
-    if type(preferences) == type(""):
+def solve_SRI(preferences, density=None, index=None, optimisation=OptimalityCriteria.NONE):
+    if density is not None:
+        if index is not None:
+            preferences = read_instance(preferences, density, index)
+        else:
+            raise(ValueError("Too few arguments", preferences, density, index))
+    elif type(preferences) == type(""):
         preferences = read_instance(preferences)
     h = PreferenceHelper(preferences)
     m = Model("SRI")

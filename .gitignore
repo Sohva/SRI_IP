@@ -1,5 +1,5 @@
 src/__pycache__/
-src/random.py
+src/.pytest_cache/
 *.pyc
 
 data/

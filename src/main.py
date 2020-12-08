@@ -6,6 +6,5 @@ preferences = [[8, 2, 9, 3, 6, 4, 5, 7, 10], [4, 3, 8, 9, 5, 1, 10, 6, 7], [5, 6
 preferences = [[2, 3, 4], [3, 1, 4], [1,2, 4], [1]]
 preferences = [[u - 1 for u in ls] for ls in preferences]
 
-file = r"C:\Users\Sofia\Documents\level5project\SRI_IP\data\instances\20\i-20-25-10.txt"
-print(solve_SRI(preferences, OptimalityCriteria.ALMOST_STABLE))
+print(solve_SRI(20, 25, 10, OptimalityCriteria.ALMOST_STABLE))
 
