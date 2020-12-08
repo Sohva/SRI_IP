@@ -10,7 +10,7 @@ def check_feasibility(preferences, answer):
             return pair, "Not acceptable"
     blocking_pairs = get_blocking_pairs(preferences, answer)
     if blocking_pairs:
-        return blocking_pairs, "Blocking"
+        return blocking_pairs, str(len(blocking_pairs)) + " blocking"
     return None
 
 def get_blocking_pairs(preferences, answer):

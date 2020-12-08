@@ -1,6 +1,6 @@
 import re
-from model import *
-from feasibility_checker import cost, check_feasibility, profile
+from model import OptimalityCriteria, solve_SRI
+from feasibility_checker import cost, check_feasibility, profile, read_instance
 import sys
 
 def parse_answers(file_name, blocking=False):
@@ -49,14 +49,19 @@ def check_optimality_and_feasibility(size, density, criteria):
         answers = parse_answers(file)
     file_base = "C:\\Users\\Sofia\\Documents\\level5project\\SRI_IP\\data\\instances\\%d\\i-%d-%d-%d.txt"
     messages = ""
-    for i in range(1, 21):
+    for i in range(1, len(answers) + 1):
         file = file_base % (size, size, density, i)
         sol = solve_SRI(file, criteria)
         preferences = read_instance(file, 0)
         if sol != answers[i-1]:
-            messages += str(i) + " is different\nShould be\n"
-            messages += str(answers[i-1]) + "\n"
-            messages += "We got\n" + str(sol) + "\n"
+            messages += str(i) + " is different\n"
+            if criteria != OptimalityCriteria.ALMOST_STABLE or answers[i-1] is None or sol is None:
+                messages += "Should be\n"
+                messages += str(answers[i-1]) + "\n"
+                messages += "We got\n" + str(sol) + "\n"
+            if not (answers[i - 1] is None or sol is None):
+                messages += "Only in answer: " + str(answers[i-1] - sol) + "\n"
+                messages += "Only in solution: " + str(sol - answers[i-1]) + "\n"
             if criteria == OptimalityCriteria.EGALITARIAN:
                 messages += compare_egalitarian(sol, answers[i-1], preferences)
             if criteria == OptimalityCriteria.FIRST_CHOICE_MAXIMAL:
@@ -66,11 +71,11 @@ def check_optimality_and_feasibility(size, density, criteria):
         if sol is not None:
             feasibility = check_feasibility(preferences, sol) 
             if feasibility is not None:
-                messages += str((size, density, i)) + " : " + str(feasibility) + "\n"
+                messages += "IP " + " : " + str(feasibility) + "\n"
         if answers[i-1] is not None:
             feasibility = check_feasibility(preferences, sol) 
             if feasibility is not None:
-                messages += "ASP %d : " % i + str(feasibility) + "\n"
+                messages += "ASP : " + str(feasibility) + "\n"
     return messages
 
 def compare_egalitarian(sol, answer, preferences):
