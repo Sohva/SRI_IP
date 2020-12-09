@@ -20,21 +20,26 @@ def get_blocking_pairs(preferences, answer):
         partners[pair[1]] = pair[0]
     blocking_pairs = []
     for agent in range(1, len(preferences) + 1):
-        for better_option in can_get_better_than(
-                preferences, partners, agent, partners.get(agent, None)):
+        for better_option in can_get_better_than_current_partner(
+                preferences, partners, agent):
             blocking_pairs.append((agent, better_option))
     return blocking_pairs
 
-def can_get_better_than(preferences, partners, j, i=None):
+def can_get_better_than_current_partner(preferences, partners, j):
     better_options = []
-    if i is None:
+    if j not in partners:
         preferred_agents = preferences[j-1]
     else:
-        preferred_agents = preferences[j-1][0:preferences[j-1].index(i)]
-    for preferred_agent in preferred_agents:
-        prefs = preferences[preferred_agent - 1]
-        if (j in prefs) and (not preferred_agent in partners or prefs.index(j) < prefs.index(partners[preferred_agent])):
-            better_options.append(preferred_agent)
+        preferred_agents = preferences[j-1][0:preferences[j-1].index(partners[j])]
+    for i in preferred_agents:
+        i_prefs = preferences[i - 1]
+        # i finds j acceptable
+        if (j in i_prefs) and (
+                # i is not partnered
+                not i in partners
+                # i prefers j to their current partner
+                or i_prefs.index(j) < i_prefs.index(partners[i])):
+            better_options.append(i)
     return better_options
 
 def cost(preferences, answer):

@@ -3,30 +3,26 @@ from model import OptimalityCriteria, solve_SRI
 from feasibility_checker import cost, check_feasibility, profile, read_instance
 import sys
 
-def parse_answers(file_name, blocking=False):
+def parse_answers(file_name):
     answers = []
     with open(file_name) as f:
         for line in f.readlines():
-            if line.startswith("roommate") and not blocking:
+            if line.startswith("roommate"):
                 current_answer = parse_solution(line)
-            elif line.startswith("roommate") and blocking:
-                current_answer = [parse_solution(line), []]
             elif line.startswith("UNSATISFIABLE"):
                 answers.append(None)
             elif line.startswith("OPTIMUM FOUND"):
                 answers.append(current_answer)
                 current_answer = None
-            elif line.startswith("blocking") and blocking:
-                current_answer[1] = parse_solution(line)
     return answers
 
 def parse_solution(line):
     pairs = set()
     for pair_str in line.split():
-        match = re.search(r"\d*,\d*", pair_str)
+        match = re.search(r"roommate\(\d*,\d*", pair_str)
         if match == None:
-            raise(ValueError(pair_str))
-        match = match.group(0).split(",")
+            continue
+        match = match.group(0)[len("roommate("):].split(",")
         x, y = int(match[0]), int(match[1])
         if x < y:
             pairs.add((x,y))
@@ -121,7 +117,9 @@ if __name__ == "__main__":
     sizes = [i for i in sizes if i >= minsize and i<= maxsize]
     for density in [25,50,75,100]:
         for size in sizes:
-            if not (criteria == OptimalityCriteria.FIRST_CHOICE_MAXIMAL and density == 25 and size == 80):
+            # Known non-existing results
+            if not ((criteria == OptimalityCriteria.FIRST_CHOICE_MAXIMAL and density == 25 and size == 80)
+                    or (criteria == OptimalityCriteria.ALMOST_STABLE and density > 50 and size == 100)):
                 messages.append((size, density,
                     check_optimality_and_feasibility(size, density, criteria)))
     for size, density, message in messages:
