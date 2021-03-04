@@ -16,6 +16,31 @@ def parse_answers(file_name):
                 current_answer = None
     return answers
 
+def parse_answers_cp(file_name):
+    print(file_name)
+    answers = []
+    with open(file_name) as f:
+        sol_line = False
+        for line in f.readlines():
+            if sol_line:
+                if line.startswith("solutions: 0"):
+                    answers.append(None)
+                else:
+                    string_pairs = [pair for pair in line.split()]
+                    pairs = set()
+                    for pair in string_pairs:
+                        pair = pair[1:-1].split(",")
+                        pair = (int(pair[0]), int(pair[1]))
+                        if pair[0] != pair[1]:
+                            pairs.add(pair)
+                    answers.append(pairs)
+            if line.startswith("Instance"):
+                sol_line = True
+            else:
+                sol_line = False
+    return answers
+
+
 def parse_solution(line):
     pairs = set()
     for pair_str in line.split():
@@ -28,7 +53,7 @@ def parse_solution(line):
             pairs.add((x,y))
     return pairs
 
-def check_optimality_and_feasibility(size, density, criteria):
+def check_optimality_and_feasibility(size, density, criteria, cp=False):
     if criteria == OptimalityCriteria.EGALITARIAN:
         folder = "egal"
     elif criteria in [OptimalityCriteria.FIRST_CHOICE_MAXIMAL, OptimalityCriteria.RANK_MAXIMAL]:
@@ -37,15 +62,26 @@ def check_optimality_and_feasibility(size, density, criteria):
         folder = "almost"
     else:
         raise(ValueError("Unsupported criteria", criteria))
-    file = "C:\\Users\\Sofia\\Documents\\level5project\\SRI_IP\\data\\outputs\\ASP\\%s-SRI\\output-%s-time-%d-%d.txt" % (folder, folder, size,density)
+    if cp:
+        solver = "CP_new"
+    else:
+        solver = "ASP"
+    file = "C:\\Users\\Sofia\\Documents\\level5project\\SRI_IP\\data\\outputs\\%s\\%s-SRI\\output-%s-time-%d-%d.txt" % (solver, folder, folder, size,density)
     try:
-        answers = parse_answers(file)
+        if cp:
+            answers = parse_answers_cp(file)
+        else:
+            answers = parse_answers(file)
     except FileNotFoundError:
-        file = "C:\\Users\\Sofia\\Documents\\level5project\\SRI_IP\\data\\outputs\\ASP\\%s-SRI\\output-%s-%d-%d.txt" % (folder, folder, size,density)
-        answers = parse_answers(file)
+        file = "C:\\Users\\Sofia\\Documents\\level5project\\SRI_IP\\data\\outputs\\%s\\%s-SRI\\output-%s-%d-%d.txt" % (solver, folder, folder, size,density)
+        if cp:
+            answers = parse_answers_cp(file)
+        else:
+            answers = parse_answers(file)
     messages = ""
+    print(answers)
     # almost 40-50 is missing the first answer
-    if criteria == OptimalityCriteria.ALMOST_STABLE and density == 50 and size == 40:
+    if criteria == OptimalityCriteria.ALMOST_STABLE and density == 50 and size == 40 and not cp:
         answers = [None] + answers
     for i in range(1, len(answers) + 1):
         sol = solve_SRI(size, density, i, criteria)
@@ -104,7 +140,7 @@ if __name__ == "__main__":
         "generous": OptimalityCriteria.EGALITARIAN,
         "almost":OptimalityCriteria.ALMOST_STABLE}
     criteria = criteria_dict[sys.argv[1].lower().strip()]
-    sizes = [20,40,60,80,100,150,200]
+    sizes = [20, 40, 60, 80, 100, 150, 200]
     if len(sys.argv) <= 2:
         minsize = 20
         maxsize = 100
@@ -115,13 +151,14 @@ if __name__ == "__main__":
         minsize = int(sys.argv[2])
         maxsize = int(sys.argv[3])
     sizes = [i for i in sizes if i >= minsize and i<= maxsize]
-    for density in [25,50,75,100]:
+    for density in [25,50, 75, 100]:
         for size in sizes:
             # Known non-existing results
-            if not ((criteria == OptimalityCriteria.FIRST_CHOICE_MAXIMAL and density == 25 and size == 80)
+            if not ((criteria in [OptimalityCriteria.FIRST_CHOICE_MAXIMAL,
+                        OptimalityCriteria.RANK_MAXIMAL] and density == 25 and size == 80)
                     or (criteria == OptimalityCriteria.ALMOST_STABLE and density > 50 and size == 100)):
                 messages.append((size, density,
-                    check_optimality_and_feasibility(size, density, criteria)))
+                    check_optimality_and_feasibility(size, density, criteria, True)))
     for size, density, message in messages:
         print(size, density)
         print(message)

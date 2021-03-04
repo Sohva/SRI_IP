@@ -7,7 +7,9 @@ preferences = [[8, 2, 9, 3, 6, 4, 5, 7, 10], [4, 3, 8, 9, 5, 1, 10, 6, 7], [5, 6
 preferences = [[2, 3, 4], [3, 1, 4], [1,2, 4], [1]]
 preferences = [[u - 1 for u in ls] for ls in preferences]
 
-sol = solve_SRI(40, 50, 1, OptimalityCriteria.ALMOST_STABLE)
-print(sol)
-print(check_feasibility(read_instance(40,50,1,0), sol))
+for size in [20]:
+    for density in range(25, 26):
+        for i in range(1,21):
+            print(size, density, i)
+            print(solve_SRI(size, density, i, OptimalityCriteria.EGALITARIAN))
 
