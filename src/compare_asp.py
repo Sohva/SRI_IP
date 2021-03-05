@@ -17,7 +17,6 @@ def parse_answers(file_name):
     return answers
 
 def parse_answers_cp(file_name):
-    print(file_name)
     answers = []
     with open(file_name) as f:
         sol_line = False
@@ -79,7 +78,6 @@ def check_optimality_and_feasibility(size, density, criteria, cp=False):
         else:
             answers = parse_answers(file)
     messages = ""
-    print(answers)
     # almost 40-50 is missing the first answer
     if criteria == OptimalityCriteria.ALMOST_STABLE and density == 50 and size == 40 and not cp:
         answers = [None] + answers
