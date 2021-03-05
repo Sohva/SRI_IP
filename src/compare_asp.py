@@ -52,7 +52,7 @@ def parse_solution(line):
             pairs.add((x,y))
     return pairs
 
-def check_optimality_and_feasibility(size, density, criteria, cp=False):
+def parse_answers_from_parameters(size, density, criteria, solver):
     if criteria == OptimalityCriteria.EGALITARIAN:
         folder = "egal"
     elif criteria in [OptimalityCriteria.FIRST_CHOICE_MAXIMAL, OptimalityCriteria.RANK_MAXIMAL]:
@@ -61,28 +61,32 @@ def check_optimality_and_feasibility(size, density, criteria, cp=False):
         folder = "almost"
     else:
         raise(ValueError("Unsupported criteria", criteria))
-    if cp:
+    if solver == "CP":
         solver = "CP_new"
-    else:
-        solver = "ASP"
     file = "C:\\Users\\Sofia\\Documents\\level5project\\SRI_IP\\data\\outputs\\%s\\%s-SRI\\output-%s-time-%d-%d.txt" % (solver, folder, folder, size,density)
     try:
-        if cp:
+        if solver =="CP_new" or solver == "IP":
             answers = parse_answers_cp(file)
         else:
             answers = parse_answers(file)
     except FileNotFoundError:
         file = "C:\\Users\\Sofia\\Documents\\level5project\\SRI_IP\\data\\outputs\\%s\\%s-SRI\\output-%s-%d-%d.txt" % (solver, folder, folder, size,density)
-        if cp:
+        if type =="CP" or type == "IP":
             answers = parse_answers_cp(file)
         else:
             answers = parse_answers(file)
+    return answers
+
+
+def check_optimality_and_feasibility(size, density, criteria, cp=False):
+    solver = "CP" if cp else "ASP"
+    answers = parse_answers_from_parameters(size, density, criteria, solver)
     messages = ""
     # almost 40-50 is missing the first answer
     if criteria == OptimalityCriteria.ALMOST_STABLE and density == 50 and size == 40 and not cp:
         answers = [None] + answers
     for i in range(1, len(answers) + 1):
-        sol = solve_SRI(size, density, i, criteria)
+        sol = parse_answers_from_parameters(size, density, criteria, "IP")
         preferences = read_instance(size, density, i, 0)
         if sol != answers[i-1]:
             messages += str(i) + " is different\n"
