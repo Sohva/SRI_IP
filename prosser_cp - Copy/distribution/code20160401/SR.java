@@ -222,7 +222,6 @@ public class SR {
 			while (solver.solve()) {
 				solution.record();
 				solutions += 1;
-				System.out.println("blocking_pairs: " + solution.getIntVal(blocking_sum)+ " ");
 			}
 			if (solutions > 0) {
 				getMatchingSize(solution);
