@@ -3,5 +3,3 @@ src/.pytest_cache/
 *.pyc
 
 data/*
-!data/instances.zip
-!data/outputs/*
