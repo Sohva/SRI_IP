@@ -4,3 +4,4 @@ src/.pytest_cache/
 
 data/*
 !data/instances.zip
+!data/outputs/*
