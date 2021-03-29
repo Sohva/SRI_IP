@@ -68,7 +68,7 @@ def solve_SRI(preferences, density=None, index=None, optimisation=OptimalityCrit
             if not hasattr(m, "ObjVal"):
                 return None
             m.addConstr(x.prod(delta_i) <= m.ObjVal)
-        m.setObjective(x.prod(h.delta(h.max_pref_length - 1)))
+        m.setObjective(x.prod(h.delta(1)))
     elif optimisation == OptimalityCriteria.ALMOST_STABLE:
         b = m.addVars(n, n, vtype=GRB.BINARY)
         m.addConstrs(x.sum(u, [i for i in h.get_preferred_neighbours(u, v)])

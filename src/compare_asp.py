@@ -55,10 +55,14 @@ def parse_solution(line):
 def parse_answers_from_parameters(size, density, criteria, solver):
     if criteria == OptimalityCriteria.EGALITARIAN:
         folder = "egal"
+    elif criteria == OptimalityCriteria.FIRST_CHOICE_MAXIMAL and solver != "ASP":
+        folder = "1stmax"
     elif criteria in [OptimalityCriteria.FIRST_CHOICE_MAXIMAL, OptimalityCriteria.RANK_MAXIMAL]:
         folder = "rankmax"
     elif criteria == OptimalityCriteria.ALMOST_STABLE:
         folder = "almost"
+    elif criteria == OptimalityCriteria.GENEROUS:
+        folder = "generous"
     else:
         raise(ValueError("Unsupported criteria", criteria))
     if solver == "CP":
@@ -71,7 +75,7 @@ def parse_answers_from_parameters(size, density, criteria, solver):
             answers = parse_answers(file)
     except FileNotFoundError:
         file = "C:\\Users\\Sofia\\Documents\\level5project\\SRI_IP\\data\\outputs\\%s\\%s-SRI\\output-%s-%d-%d.txt" % (solver, folder, folder, size,density)
-        if type =="CP" or type == "IP":
+        if solver =="CP_new" or solver == "IP":
             answers = parse_answers_cp(file)
         else:
             answers = parse_answers(file)
@@ -85,30 +89,32 @@ def check_optimality_and_feasibility(size, density, criteria, cp=False):
     # almost 40-50 is missing the first answer
     if criteria == OptimalityCriteria.ALMOST_STABLE and density == 50 and size == 40 and not cp:
         answers = [None] + answers
+    solutions = parse_answers_from_parameters(size, density, criteria, "IP")
     for i in range(1, len(answers) + 1):
-        sol = parse_answers_from_parameters(size, density, criteria, "IP")
         preferences = read_instance(size, density, i, 0)
-        if sol != answers[i-1]:
+        solution = solutions[i-1]
+        answer = answers[i-1]
+        if solution != answer:
             messages += str(i) + " is different\n"
-            if criteria != OptimalityCriteria.ALMOST_STABLE or answers[i-1] is None or sol is None:
+            if criteria != OptimalityCriteria.ALMOST_STABLE or answer is None or solution is None:
                 messages += "Should be\n"
-                messages += str(answers[i-1]) + "\n"
-                messages += "We got\n" + str(sol) + "\n"
-            if not (answers[i - 1] is None or sol is None):
-                messages += "Only in answer: " + str(answers[i-1] - sol) + "\n"
-                messages += "Only in solution: " + str(sol - answers[i-1]) + "\n"
+                messages += str(answer) + "\n"
+                messages += "We got\n" + str(solution) + "\n"
+            if not (answer is None or solution is None):
+                messages += "Only in answer: " + str(answer - solution) + "\n"
+                messages += "Only in solution: " + str(solution - answer) + "\n"
             if criteria == OptimalityCriteria.EGALITARIAN:
-                messages += compare_egalitarian(sol, answers[i-1], preferences)
+                messages += compare_egalitarian(solution, answer, preferences)
             if criteria == OptimalityCriteria.FIRST_CHOICE_MAXIMAL:
-                messages += compare_first_choice_maximal(sol, answers[i-1], preferences)
-            if criteria == OptimalityCriteria.RANK_MAXIMAL:
-                messages += compare_rank_maximal(sol, answers[i-1], preferences)
-        if sol is not None:
-            feasibility = check_feasibility(preferences, sol) 
+                messages += compare_first_choice_maximal(solution, answer, preferences)
+            if criteria == OptimalityCriteria.RANK_MAXIMAL or criteria == OptimalityCriteria.GENEROUS:
+                messages += compare_rank_maximal(solution, answer, preferences)
+        if solution is not None:
+            feasibility = check_feasibility(preferences, solution) 
             if feasibility is not None:
                 messages += "IP " + " : " + str(feasibility) + "\n"
         if answers[i-1] is not None:
-            feasibility = check_feasibility(preferences, answers[i-1]) 
+            feasibility = check_feasibility(preferences, answer) 
             if feasibility is not None:
                 messages += "ASP : " + str(feasibility) + "\n"
     return messages
@@ -130,8 +136,8 @@ def compare_first_choice_maximal(sol, answer, preferences):
 def compare_rank_maximal(sol, answer, preferences):
     messages = ""
     if sol is not None and answer is not None:
-        messages += "The profile of ASP: %d\n" % (profile(preferences, answer))
-        messages += "The profile of IP: %d\n" % (profile(preferences, sol))
+        messages += "The profile of ASP: %r\n" % str(profile(preferences, answer))
+        messages += "The profile of IP: %r\n" % str(profile(preferences, sol))
     return messages
 
 if __name__ == "__main__":
@@ -139,7 +145,7 @@ if __name__ == "__main__":
     criteria_dict = {"rankmax": OptimalityCriteria.RANK_MAXIMAL,
         "1stmax": OptimalityCriteria.FIRST_CHOICE_MAXIMAL,
         "egal": OptimalityCriteria.EGALITARIAN,
-        "generous": OptimalityCriteria.EGALITARIAN,
+        "generous": OptimalityCriteria.GENEROUS,
         "almost":OptimalityCriteria.ALMOST_STABLE}
     criteria = criteria_dict[sys.argv[1].lower().strip()]
     sizes = [20, 40, 60, 80, 100, 150, 200]
@@ -153,14 +159,14 @@ if __name__ == "__main__":
         minsize = int(sys.argv[2])
         maxsize = int(sys.argv[3])
     sizes = [i for i in sizes if i >= minsize and i<= maxsize]
-    for density in [25,50, 75, 100]:
+    for density in [25, 50, 75, 100]:
         for size in sizes:
             # Known non-existing results
             if not ((criteria in [OptimalityCriteria.FIRST_CHOICE_MAXIMAL,
                         OptimalityCriteria.RANK_MAXIMAL] and density == 25 and size == 80)
                     or (criteria == OptimalityCriteria.ALMOST_STABLE and density > 50 and size == 100)):
                 messages.append((size, density,
-                    check_optimality_and_feasibility(size, density, criteria, True)))
+                    check_optimality_and_feasibility(size, density, criteria, False)))
     for size, density, message in messages:
         print(size, density)
         print(message)
