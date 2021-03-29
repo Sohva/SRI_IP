@@ -17,11 +17,13 @@ if __name__ == "__main__":
     else:
         base = sys.argv[1]
     out = path.join(base, "outputs", "IP")
-    folder = path.join(base, "outputs", "IP", criteria_string +"-SRI")
-    try:
-        mkdir(folder)
-    except FileExistsError:
-        pass
+    folders = [base, "outputs", "IP", criteria_string +"-SRI"]
+    folder = path.join(*folders)
+    for i in range(1, len(folders)+1):
+        try:
+            mkdir(path.join(*folders[0:i]))
+        except FileExistsError:
+            pass
     sizes = [20, 40, 60, 80, 100, 150, 200]
     if len(sys.argv) <= 3:
         minsize = 20
@@ -33,7 +35,7 @@ if __name__ == "__main__":
     for size in sizes:
         for density in range(25, 101, 25):
             filename = path.join(folder,"output" + "-" + criteria_string + "-" + str(size) + "-" + str(density) + ".txt")
-            with open(filename, 'w') as f:
+            with open(filename, 'w+') as f:
                 with redirect_stdout(f):
                     for i in range(1,21):
                         sol = solve_SRI(size, density, i, criteria)
