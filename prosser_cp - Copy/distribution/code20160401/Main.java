@@ -4,6 +4,9 @@ import java.io.IOException;
 import java.io.PrintStream;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Arrays;
+import java.util.LinkedList;
+import java.util.List;
 
 import org.chocosolver.solver.exception.ContradictionException;
 
@@ -14,8 +17,13 @@ public class Main {
 		PrintStream o;
 
 		SR sr;
-		int[] sizes = {20};
-		int[] densities = {75};
+		int[] all_sizes = {20, 40, 60, 80, 100, 150, 200};
+		List<Integer> sizes = new LinkedList<Integer>();
+		for (int size : all_sizes) {
+			if (size >= Integer.parseInt(args[2]) && size <= Integer.parseInt(args[3]))
+				sizes.add(size);
+		}
+		int[] densities = {25, 50, 75, 100};
 		String base;
 		if (args[0].equals("default"))
 			base ="C:\\Users\\Sofia\\Documents\\level5project\\SRI_IP\\data\\";
@@ -23,6 +31,9 @@ public class Main {
 			base = args[0];
 		Path in = Paths.get(base, "instances");
 		String criteria = args[1];
+		String[] valid_criteria = new String[] {"egal", "1stmax", "rankmax", "generous", "almost"};
+		if (!Arrays.asList(valid_criteria).contains(criteria))
+			throw new IllegalArgumentException(criteria + " is not a valid criteria!");
 		Path outfolder = Paths.get(base, "outputs", "CP_new", criteria + "-SRI");
 		File fold = new File(outfolder.toString());
 		String path;

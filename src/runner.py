@@ -4,6 +4,9 @@ from model import OptimalityCriteria, solve_SRI
 from contextlib import redirect_stdout
 import sys
 
+def get_file_name(data_folder, size, density, i):
+    return path.join(data_folder, "instances", str(size), "i-%d-%d-%d.txt" % (size, density, i))
+
 if __name__ == "__main__":
     criteria_dict = {"rankmax": OptimalityCriteria.RANK_MAXIMAL,
         "1stmax": OptimalityCriteria.FIRST_CHOICE_MAXIMAL,
@@ -38,7 +41,7 @@ if __name__ == "__main__":
             with open(filename, 'w+') as f:
                 with redirect_stdout(f):
                     for i in range(1,21):
-                        sol = solve_SRI(size, density, i, criteria)
+                        sol = solve_SRI(get_file_name(base, size, density, i))
                         if not sol:
                             print("Solution: None\n")
                         else:
