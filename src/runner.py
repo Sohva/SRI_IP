@@ -41,10 +41,10 @@ if __name__ == "__main__":
             with open(filename, 'w+') as f:
                 with redirect_stdout(f):
                     for i in range(1,21):
-                        sol = solve_SRI(get_file_name(base, size, density, i))
+                        sol = solve_SRI(get_file_name(base, size, density, i), optimisation=criteria)
+                        print("Search ended")
                         if not sol:
                             print("Solution: None\n")
                         else:
-                            print("Solution")
                             print(str(sol).replace(" ", "")[1:-1])
                             print("\n")

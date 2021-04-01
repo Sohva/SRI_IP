@@ -1,7 +1,7 @@
 from gurobipy import *
 
 from utils import read_instance, PreferenceHelper
-
+import time
 from enum import Enum
 
 class OptimalityCriteria(Enum):
@@ -13,6 +13,8 @@ class OptimalityCriteria(Enum):
     ALMOST_STABLE = 5
 
 def solve_SRI(preferences, density=None, index=None, optimisation=OptimalityCriteria.NONE):
+    start_read_time = time.time_ns()
+    start_total_time = start_read_time
     if density is not None:
         if index is not None:
             preferences = read_instance(preferences, density, index)
@@ -21,6 +23,8 @@ def solve_SRI(preferences, density=None, index=None, optimisation=OptimalityCrit
     elif type(preferences) == type(""):
         preferences = read_instance(preferences)
     h = PreferenceHelper(preferences)
+    print("Readtime: " + str((time.time_ns() - start_read_time) / 1e9))
+    start_build_time = time.time_ns()
     m = Model("SRI")
 
     n = len(preferences)
@@ -78,8 +82,9 @@ def solve_SRI(preferences, density=None, index=None, optimisation=OptimalityCrit
         m.setObjective(b.sum())
     elif optimisation != OptimalityCriteria.NONE:
         raise(ValueError("Unsupported criteria", optimisation))
-
+    print("Buildtime: " + str((time.time_ns() - start_build_time)/1e9))
     m.optimize()
+    print("Totaltime: " + str((time.time_ns() - start_total_time)/1e9))
     n = len(preferences)
     matches = set()
     if not hasattr(x[0,0], "x"):

@@ -63,7 +63,7 @@ if __name__ == "__main__":
     messages = ""
     for i in range(1, 21):
         file = file_base % (size, size, density, i)
-        sols = solve_SRI(file, OptimalityCriteria.EGALITARIAN)
+        sols = solve_SRI(file, optimisation=OptimalityCriteria.EGALITARIAN)
         preferences = read_instance(file, 0)
         messages += "**** " +str(i) + " ****\n"
         if sols is None:

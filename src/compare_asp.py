@@ -3,7 +3,7 @@ from model import OptimalityCriteria, solve_SRI
 from feasibility_checker import cost, check_feasibility, profile, read_instance
 import sys
 
-def parse_answers(file_name):
+def parse_answers_asp(file_name):
     answers = []
     with open(file_name) as f:
         for line in f.readlines():
@@ -16,29 +16,33 @@ def parse_answers(file_name):
                 current_answer = None
     return answers
 
-def parse_answers_cp(file_name):
+def parse_answers(file_name, splitter):
     answers = []
     with open(file_name) as f:
         sol_line = False
         for line in f.readlines():
             if sol_line:
-                if line.startswith("solutions: 0"):
+                if line.startswith("solutions: 0") or line.startswith("Solution: None"):
                     answers.append(None)
                 else:
-                    string_pairs = [pair for pair in line.split()]
-                    pairs = set()
-                    for pair in string_pairs:
-                        pair = pair[1:-1].split(",")
-                        pair = (int(pair[0]), int(pair[1]))
-                        if pair[0] != pair[1]:
-                            pairs.add(pair)
-                    answers.append(pairs)
-            if line.startswith("Instance"):
+                    answers.append(parse_solution_line(line, splitter))
+            if line.startswith("Search ended"):
                 sol_line = True
             else:
                 sol_line = False
     return answers
 
+
+
+def parse_solution_line(line, splitter):
+    string_pairs = [pair for pair in line.split(splitter)]
+    pairs = set()
+    for pair in string_pairs:
+        pair = pair.replace("(", "").replace(")", "").split(",")
+        pair = (int(pair[0]), int(pair[1]))
+        if pair[0] != pair[1]:
+            pairs.add(pair)
+    return pairs
 
 def parse_solution(line):
     pairs = set()
@@ -69,16 +73,20 @@ def parse_answers_from_parameters(size, density, criteria, solver):
         solver = "CP_new"
     file = "C:\\Users\\Sofia\\Documents\\level5project\\SRI_IP\\data\\outputs\\%s\\%s-SRI\\output-%s-time-%d-%d.txt" % (solver, folder, folder, size,density)
     try:
-        if solver =="CP_new" or solver == "IP":
-            answers = parse_answers_cp(file)
+        if solver =="CP_new":
+            answers = parse_answers(file, " ")
+        elif solver == "IP":
+            answers = parse_answers(file, "),(")
         else:
-            answers = parse_answers(file)
+            answers = parse_answers_asp(file)
     except FileNotFoundError:
         file = "C:\\Users\\Sofia\\Documents\\level5project\\SRI_IP\\data\\outputs\\%s\\%s-SRI\\output-%s-%d-%d.txt" % (solver, folder, folder, size,density)
-        if solver =="CP_new" or solver == "IP":
-            answers = parse_answers_cp(file)
+        if solver =="CP_new":
+            answers = parse_answers(file, " ")
+        elif solver == "IP":
+            answers = parse_answers(file, "),(")
         else:
-            answers = parse_answers(file)
+            answers = parse_answers_asp(file)
     return answers
 
 

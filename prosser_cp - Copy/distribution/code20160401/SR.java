@@ -166,6 +166,7 @@ public class SR {
 	}
 
 	static void solveProfile(String path, String criteria) throws ContradictionException, IOException {
+		long totalTime = System.currentTimeMillis();
 		SR sr = new SR(path);
 		int[] minProfile = new int[sr.n];
 		for (int i = 0; i < minProfile.length; i++) {
@@ -190,7 +191,8 @@ public class SR {
 			sr.displayMatching(solution);	
 			solutions = 1;
 		}
-		System.out.print("solutions: " + solutions + " \n");
+		System.out.print("solutions: " + solutions + " ");
+		System.out.print("totalTime: " + (System.currentTimeMillis() - totalTime) + "  \n");
 	}
 
 	void solve(String command) throws ContradictionException {

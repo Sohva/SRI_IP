@@ -46,7 +46,7 @@ public class Main {
 										"output" + "-" + criteria + "-" + size + "-" + density + ".txt").toString()));
 				System.setOut(o); 
 				for (int i = 1; i <= 20; i++) {
-					System.out.println("\nInstance");
+					System.out.println("\nSearch ended");
 					path = in.resolve(Paths.get(size + "", "i-" + size + "-" + density + "-" + i + ".txt")).toString();
 					if (criteria.equals("rankmax") || criteria.equals("generous")) {
 						SR.solveProfile(path, criteria);
