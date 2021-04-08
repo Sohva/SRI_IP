@@ -40,12 +40,16 @@ public class Main {
 		fold.mkdirs();
 		for (int size : sizes) {
 			for (int density : densities) {
+				if (args.length > 4 && ! args[4].equals(density  + ""))
+					continue;
 				o = new PrintStream(
 						new File(
 								outfolder.resolve(
 										"output" + "-" + criteria + "-" + size + "-" + density + ".txt").toString()));
 				System.setOut(o); 
 				for (int i = 1; i <= 20; i++) {
+					if (args.length > 5 && ! args[5].equals(i  + ""))
+						continue;
 					System.out.println("\nSearch ended");
 					path = in.resolve(Paths.get(size + "", "i-" + size + "-" + density + "-" + i + ".txt")).toString();
 					if (criteria.equals("rankmax") || criteria.equals("generous")) {
