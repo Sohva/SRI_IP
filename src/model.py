@@ -52,9 +52,14 @@ def solve_SRI(preferences, density=None, index=None, optimisation=OptimalityCrit
     has_solution = True
 
     if optimisation == OptimalityCriteria.EGALITARIAN:
-        # \sum_{u, v \in V} rank(u, v)x_{u,v}
+        m.Params.BranchDir = -1
+        m.Params.Heuristics = 0
+        m.Params.PrePasses = 2
         m.setObjective(x.prod(h.ranks))
     elif optimisation == OptimalityCriteria.FIRST_CHOICE_MAXIMAL:
+        m.Params.Heuristics = 0
+        m.Params.MIPFocus = 3
+        m.Params.NoRelHeurWork = 60
         # \sum_{u, v \in V} \delta^1(u,v)x_{u,v}
         m.setObjective(x.prod(h.delta(1)), GRB.MAXIMIZE)
     elif optimisation == OptimalityCriteria.RANK_MAXIMAL:
@@ -68,7 +73,13 @@ def solve_SRI(preferences, density=None, index=None, optimisation=OptimalityCrit
             m.addConstr(x.prod(delta_i) >= m.ObjVal)
         m.setObjective(x.prod(h.delta(h.max_pref_length - 1)), GRB.MAXIMIZE)
     elif optimisation == OptimalityCriteria.GENEROUS:
-        for i in range(h.max_pref_length, 1, -1):
+        m.Params.DegenMoves = 4
+        m.Params.Heuristics = 0
+        m.Params.PrePasses = 5
+        m.Params.NoRelHeurWork = 600
+        m.Params.BranchDir = -1
+        m.Params.MIPFocus = 2
+        for i in range(h.max_pref_length, 1 , -1):
             delta_i = h.delta(i)
             m.setObjective(x.prod(delta_i))
             m.optimize()
@@ -78,6 +89,11 @@ def solve_SRI(preferences, density=None, index=None, optimisation=OptimalityCrit
             m.addConstr(x.prod(delta_i) <= m.ObjVal)
         m.setObjective(x.prod(h.delta(1)))
     elif optimisation == OptimalityCriteria.ALMOST_STABLE:
+        m.Params.NormAdjust = 0
+        m.Params.Heuristics = 0.001
+        m.Params.VarBranch = 1
+        m.Params.GomoryPasses = 15
+        m.Params.PreSparsify = 0
         b = m.addVars(n, n, vtype=GRB.BINARY)
         m.addConstrs(x.sum(u, [i for i in h.get_preferred_neighbours(u, v)])
                 + x.sum([i for i in h.get_preferred_neighbours(v, u)], v) 
