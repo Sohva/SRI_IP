@@ -110,8 +110,10 @@ public class SR {
 					model.ifThen(model.arithm(agent[i], ">", rank[i][k]),
 							model.or(model.arithm(agent[k], "<", rank[k][i]),
 									model.arithm(blocking[i][k], "=", 1)));
+					model.ifOnlyIf(model.arithm(blocking[i][k], "=", 1),
+								model.arithm(blocking[k][i], "=", 1));
 				}
-				model.ifThen(model.arithm(agent[i], "=", rank[i][k]), model.arithm(agent[k], "=", rank[k][i]));
+				model.ifOnlyIf(model.arithm(agent[i], "=", rank[i][k]), model.arithm(agent[k], "=", rank[k][i]));
 			}
 		if (command.equals("egal")) {
 			cost = model.intVar("cost", 0, n * (n - 1));
@@ -120,6 +122,7 @@ public class SR {
 		}
 		if (command.equals("almost")) {
 			model.sum(ArrayUtils.flatten(blocking), "=", blocking_sum).post();
+			//model.mod(blocking_sum, model.intVar("2",2,2), model.intVar("0", 0, 0));
 			model.setObjective(Model.MINIMIZE, blocking_sum);
 		}
 		if (command.equals("1stmax") || command.equals("rankmax") || command.equals("generous")) {
@@ -139,10 +142,10 @@ public class SR {
 				model.setObjective(Model.MAXIMIZE, profile[maximise]);
 		}
 		solver = model.getSolver();
-		if (command.equals("almost")) {
-			//solver.setSearch(Search.minDomLBSearch(agent));
-			solver.setSearch(Search.activityBasedSearch(ArrayUtils.append(
-					ArrayUtils.flatten(blocking), agent, new IntVar[] {blocking_sum})));
+		if (command.equals("almost")) {;
+			solver.setSearch(Search.randomSearch(ArrayUtils.flatten(blocking), 353),
+					Search.domOverWDegSearch(blocking_sum), Search.randomSearch(agent, 243)
+					);
 		}
 		
 		modelTime = System.currentTimeMillis() - modelTime;
