@@ -23,7 +23,7 @@ def solve_SRI(preferences, density=None, index=None, optimisation=OptimalityCrit
     elif type(preferences) == type(""):
         preferences = read_instance(preferences)
     h = PreferenceHelper(preferences)
-    print("Readtime: " + str((time.time_ns() - start_read_time) / 1e9))
+    print("Readtime: " + str((time.time_ns() - start_read_time)) + " ns")
     start_build_time = time.time_ns()
     m = Model("SRI")
 
@@ -49,6 +49,8 @@ def solve_SRI(preferences, density=None, index=None, optimisation=OptimalityCrit
     # x_{u, v} = x_{v, u} for each {u, v} \notin E
     m.addConstrs(x[u,v] == x[v,u] for u in range(n) for v in range(n))
 
+    has_solution = True
+
     if optimisation == OptimalityCriteria.EGALITARIAN:
         # \sum_{u, v \in V} rank(u, v)x_{u,v}
         m.setObjective(x.prod(h.ranks))
@@ -61,7 +63,8 @@ def solve_SRI(preferences, density=None, index=None, optimisation=OptimalityCrit
             m.setObjective(x.prod(delta_i), GRB.MAXIMIZE)
             m.optimize()
             if not hasattr(m, "ObjVal"):
-                return None
+                has_solution = False
+                break
             m.addConstr(x.prod(delta_i) >= m.ObjVal)
         m.setObjective(x.prod(h.delta(h.max_pref_length - 1)), GRB.MAXIMIZE)
     elif optimisation == OptimalityCriteria.GENEROUS:
@@ -70,7 +73,8 @@ def solve_SRI(preferences, density=None, index=None, optimisation=OptimalityCrit
             m.setObjective(x.prod(delta_i))
             m.optimize()
             if not hasattr(m, "ObjVal"):
-                return None
+                has_solution = False
+                break
             m.addConstr(x.prod(delta_i) <= m.ObjVal)
         m.setObjective(x.prod(h.delta(1)))
     elif optimisation == OptimalityCriteria.ALMOST_STABLE:
@@ -82,9 +86,10 @@ def solve_SRI(preferences, density=None, index=None, optimisation=OptimalityCrit
         m.setObjective(b.sum())
     elif optimisation != OptimalityCriteria.NONE:
         raise(ValueError("Unsupported criteria", optimisation))
-    print("Buildtime: " + str((time.time_ns() - start_build_time)/1e9))
-    m.optimize()
-    print("Totaltime: " + str((time.time_ns() - start_total_time)/1e9))
+    print("Buildtime: " + str(time.time_ns() - start_build_time) + " ns")
+    if has_solution:
+        m.optimize()
+    print("Totaltime: " + str((time.time_ns() - start_total_time)) + " ns")
     n = len(preferences)
     matches = set()
     if not hasattr(x[0,0], "x"):
