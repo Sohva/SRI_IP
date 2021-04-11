@@ -46,7 +46,8 @@ def create_SRI(preferences, density=None, index=None, optimisation=OptimalityCri
         # \sum_{u, v \in V} \delta^1(u,v)x_{u,v}
         m.setObjective(x.prod(h.delta(1)), GRB.MAXIMIZE)
     elif optimisation == OptimalityCriteria.RANK_MAXIMAL:
-        for i in range(1, h.max_pref_length - 1):
+        
+        for i in range(1, h.max_pref_length // 2 - 1):
             delta_i = h.delta(i)
             m.setObjective(x.prod(delta_i), GRB.MAXIMIZE)
             m.optimize()

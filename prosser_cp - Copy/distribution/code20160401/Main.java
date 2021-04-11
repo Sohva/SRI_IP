@@ -7,7 +7,6 @@ import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
-
 import org.chocosolver.solver.exception.ContradictionException;
 
 public class Main {
@@ -37,15 +36,18 @@ public class Main {
 		Path outfolder = Paths.get(base, "outputs", "CP_new", criteria + "-SRI");
 		File fold = new File(outfolder.toString());
 		String path;
+		String instance = "";
 		fold.mkdirs();
 		for (int size : sizes) {
 			for (int density : densities) {
 				if (args.length > 4 && ! args[4].equals(density  + ""))
 					continue;
+				else if (args.length > 5)
+					instance = "-" + args[5];
 				o = new PrintStream(
 						new File(
 								outfolder.resolve(
-										"output" + "-" + criteria + "-" + size + "-" + density + ".txt").toString()));
+										"output" + "-" + criteria + "-" + size + "-" + density + instance + ".txt").toString()));
 				System.setOut(o); 
 				for (int i = 1; i <= 20; i++) {
 					if (args.length > 5 && ! args[5].equals(i  + ""))

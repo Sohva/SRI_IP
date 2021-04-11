@@ -5,6 +5,12 @@ from os import path
 def mean(x):
     return sum(x) / len(x)
 
+def mean_str(x):
+    if not len(x):
+        return ""
+    else:
+        return str(mean(x))
+
 def _init_stats(*args):
     all_stats = {}
     all_stats[True] = {}
@@ -82,6 +88,33 @@ def collect_stats_cp(filename, full=True):
                 stats["totaltimes"].append(_get_time("totalTime", line)/1000)
     return all_stats
 
+timestrings = ["readtimes", "buildtimes", "presolvetimes", "solvetimes", "totaltimes"]
+
+def to_cv_line(stats):
+    try:
+        s = str(mean(stats.get(timestrings[0], "")))
+    except ZeroDivisionError:
+        s = ""
+    for timestring in timestrings[1:]:
+        try:
+            s += "," + str(mean(stats.get(timestring, "")))
+        except ZeroDivisionError:
+            s+= ","
+    print(s)
+    return s
+
+def to_cv(stats, filename,solver, criteria, size, density):
+    with open(filename, "a") as f:
+        f.write(solver + "," + criteria + "," + str(size) + "," + str(density) + ",True," +to_cv_line(stats[True]) + "\n")
+        f.write(solver + "," + criteria + "," + str(size) + "," + str(density) + ",False," + to_cv_line(stats[False]) + "\n")
+
+def to_cv_format2(statsip, statscp, filename, solver, criteria, size, density):
+    with open(filename, "a") as f:
+        f.write(criteria + "," + str(size) + "," + str(density) + ",True," + mean_str(statsip[True]["totaltimes"]) + "," + mean_str(statscp[True]["totaltimes"])+ "\n")
+        f.write(criteria + "," + str(size) + "," + str(density) + ",False," + mean_str(statsip[False]["totaltimes"]) + "," + mean_str(statscp[False]["totaltimes"])+ "\n")
+
+
+
 def stats_str(stats):
     toprint = ""
     for has_solution, stat in stats.items():
@@ -97,22 +130,23 @@ def stats_str(stats):
 
 if __name__ == "__main__":
     data_folder = sys.argv[1]
+    stats_file = path.join(data_folder, "stats.csv")
+    with open(stats_file, "w") as f:
+        f.write("criteria,size,density,has solution,IP,CP\n")
     for criteria in ["egal", "almost", "rankmax", "generous", "1stmax"]:
-        print(criteria)
         for size in [20,40,60, 80, 100, 150, 200]:
             for density in [25, 50, 75, 100]:
-                print("size: %d, density: %d" % (size, density))
                 for solver in ["IP", "CP_new"]:
                     file_path = path.join(data_folder, solver,
                         criteria + "-SRI", "output-%s-%d-%d.txt" % (criteria, size, density))
                     try:
                         full = criteria not in ["rankmax", "generous"]
                         if solver == "IP":
-                            stats = collect_stats_ip(file_path, full)
+                            stats_ip = collect_stats_ip(file_path, full)
                         else:
-                            stats = collect_stats_cp(file_path, full)
-                        print(solver + "\n" + stats_str(stats))
+                            stats_cp = collect_stats_cp(file_path, full)
                     except FileNotFoundError:
                         print("%s does not exist" % file_path)
                     except ValueError as e:
                         print("%s has invalid line %r"  % (file_path, e))
+                to_cv_format2(stats_ip, stats_cp, stats_file, solver, criteria, size, density)

@@ -63,6 +63,11 @@ def solve_SRI(preferences, density=None, index=None, optimisation=OptimalityCrit
         # \sum_{u, v \in V} \delta^1(u,v)x_{u,v}
         m.setObjective(x.prod(h.delta(1)), GRB.MAXIMIZE)
     elif optimisation == OptimalityCriteria.RANK_MAXIMAL:
+        m.Params.ScaleFlag  = 1
+        m.Params.Heuristics = 0
+        m.Params.BranchDir = 1
+        m.params.PrePasses =5
+        m.Params.MIPFocus = 3
         for i in range(1, h.max_pref_length - 1):
             delta_i = h.delta(i)
             m.setObjective(x.prod(delta_i), GRB.MAXIMIZE)
@@ -76,7 +81,6 @@ def solve_SRI(preferences, density=None, index=None, optimisation=OptimalityCrit
         m.Params.DegenMoves = 4
         m.Params.Heuristics = 0
         m.Params.PrePasses = 5
-        m.Params.NoRelHeurWork = 600
         m.Params.BranchDir = -1
         m.Params.MIPFocus = 2
         for i in range(h.max_pref_length, 1 , -1):

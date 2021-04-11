@@ -9,7 +9,7 @@ preferences = [[u - 1 for u in ls] for ls in preferences]
 
 for size in [20]:
     for density in range(25, 26):
-        for i in range(1,21):
+        for i in range(1,2):
             print(size, density, i)
             print(solve_SRI(size, density, i, OptimalityCriteria.EGALITARIAN))
 
